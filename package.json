@@ -1,0 +1,7 @@
+{
+  "name": "kira-kai-website",
+  "private": true,
+  "scripts": {
+    "start": "npx serve -s . -l $PORT"
+  }
+}
