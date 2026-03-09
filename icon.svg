@@ -1,0 +1,16 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top beam (kasagi) - curved -->
+  <line x1="40" y1="100" x2="472" y2="100" stroke="#c0392b" stroke-width="24" stroke-linecap="round"/>
+  <!-- Second beam (nuki) -->
+  <rect x="80" y="130" width="352" height="16" rx="4" fill="#c0392b"/>
+  <!-- Left pillar (hashira) -->
+  <rect x="120" y="130" width="20" height="340" rx="4" fill="#1a1a1a"/>
+  <!-- Right pillar (hashira) -->
+  <rect x="372" y="130" width="20" height="340" rx="4" fill="#1a1a1a"/>
+  <!-- Pillar feet -->
+  <rect x="100" y="460" width="60" height="12" rx="4" fill="#1a1a1a"/>
+  <rect x="352" y="460" width="60" height="12" rx="4" fill="#1a1a1a"/>
+  <!-- Top beam overhang ends -->
+  <line x1="30" y1="102" x2="30" y2="118" stroke="#c0392b" stroke-width="8" stroke-linecap="round"/>
+  <line x1="482" y1="102" x2="482" y2="118" stroke="#c0392b" stroke-width="8" stroke-linecap="round"/>
+</svg>
