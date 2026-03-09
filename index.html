@@ -208,21 +208,52 @@ section { padding: 100px 24px; }
 /* Lightbox */
 .lightbox {
   display: none; position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.9);
   align-items: center; justify-content: center;
-  cursor: pointer;
+  flex-direction: column;
 }
 .lightbox.open { display: flex; }
+.lightbox-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 600;
+  color: var(--cream); margin-bottom: 16px;
+  text-align: center;
+}
+.lightbox-body {
+  display: flex; align-items: center; gap: 16px;
+}
 .lightbox img {
-  max-width: 90vw; max-height: 85vh;
+  max-width: 80vw; max-height: 70vh;
   border-radius: 4px; object-fit: contain;
 }
-.lightbox-caption {
-  position: absolute; bottom: 24px; left: 0; right: 0;
-  text-align: center; font-size: 0.85rem;
-  color: rgba(247,243,238,0.7);
-  font-family: 'Playfair Display', serif;
+.lightbox-arrow {
+  background: none; border: none;
+  color: rgba(247,243,238,0.6);
+  font-size: 2.5rem; cursor: pointer;
+  padding: 16px 12px;
+  transition: color 0.2s;
+  user-select: none;
 }
+.lightbox-arrow:hover { color: var(--gold); }
+.lightbox-arrow.hidden { visibility: hidden; }
+.lightbox-caption {
+  margin-top: 12px;
+  text-align: center; font-size: 0.8rem;
+  color: rgba(247,243,238,0.5);
+  font-style: italic;
+}
+.lightbox-counter {
+  margin-top: 8px;
+  font-size: 0.65rem; letter-spacing: 2px;
+  color: rgba(247,243,238,0.3);
+}
+.lightbox-close {
+  position: absolute; top: 20px; right: 24px;
+  background: none; border: none;
+  color: rgba(247,243,238,0.5); font-size: 1.5rem;
+  cursor: pointer; transition: color 0.2s;
+}
+.lightbox-close:hover { color: var(--cream); }
 .menu-item-desc {
   font-size: 0.75rem; color: rgba(247,243,238,0.5);
   font-style: italic; margin-top: 2px;
@@ -1043,24 +1074,66 @@ footer .footer-copy {
   <div class="footer-copy">&copy; 2026 Ban Sabai 2023 Co., Ltd. All rights reserved.</div>
 </footer>
 
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <img id="lightbox-img" src="" alt="">
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+  <div class="lightbox-title" id="lightbox-title"></div>
+  <div class="lightbox-body">
+    <button class="lightbox-arrow" id="lightbox-prev" onclick="navLightbox(-1)">&#8249;</button>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-arrow" id="lightbox-next" onclick="navLightbox(1)">&#8250;</button>
+  </div>
   <div class="lightbox-caption" id="lightbox-caption"></div>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
 </div>
 
 <script>
+var photoItems = [];
+var currentIndex = 0;
+
+function buildPhotoList() {
+  photoItems = Array.from(document.querySelectorAll('.menu-item[data-photo]'));
+}
+
 function openLightbox(el) {
-  var src = el.getAttribute('data-photo');
-  var caption = el.getAttribute('data-caption') || '';
-  document.getElementById('lightbox-img').src = src;
-  document.getElementById('lightbox-caption').textContent = caption;
+  buildPhotoList();
+  currentIndex = photoItems.indexOf(el);
+  showCurrentPhoto();
   document.getElementById('lightbox').classList.add('open');
 }
+
+function showCurrentPhoto() {
+  var el = photoItems[currentIndex];
+  document.getElementById('lightbox-img').src = el.getAttribute('data-photo');
+  document.getElementById('lightbox-title').textContent = el.getAttribute('data-caption') || '';
+  var desc = el.querySelector('.menu-item-desc');
+  document.getElementById('lightbox-caption').textContent = desc ? desc.textContent : '';
+  document.getElementById('lightbox-counter').textContent = (currentIndex + 1) + ' / ' + photoItems.length;
+  document.getElementById('lightbox-prev').classList.toggle('hidden', currentIndex === 0);
+  document.getElementById('lightbox-next').classList.toggle('hidden', currentIndex === photoItems.length - 1);
+}
+
+function navLightbox(dir) {
+  event.stopPropagation();
+  var next = currentIndex + dir;
+  if (next >= 0 && next < photoItems.length) {
+    currentIndex = next;
+    showCurrentPhoto();
+  }
+}
+
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
+
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+
 document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
   if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
 });
 
 function showMenu(id) {
