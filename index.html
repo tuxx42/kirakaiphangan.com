@@ -193,11 +193,35 @@ section { padding: 100px 24px; }
   padding: 12px 0;
   border-bottom: 1px solid rgba(198,155,109,0.1);
 }
+.menu-item[data-photo] { cursor: pointer; }
+.menu-item[data-photo]:hover .menu-item-name { color: var(--gold); }
 .menu-item-info { flex: 1; }
 .menu-item-name {
   font-family: 'Playfair Display', serif;
   font-size: 1rem; font-weight: 600;
-  color: var(--cream);
+  color: var(--cream); transition: color 0.2s;
+}
+.menu-item-name .photo-icon {
+  font-size: 0.7rem; opacity: 0.5;
+  margin-left: 6px; vertical-align: middle;
+}
+/* Lightbox */
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.85);
+  align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 90vw; max-height: 85vh;
+  border-radius: 4px; object-fit: contain;
+}
+.lightbox-caption {
+  position: absolute; bottom: 24px; left: 0; right: 0;
+  text-align: center; font-size: 0.85rem;
+  color: rgba(247,243,238,0.7);
+  font-family: 'Playfair Display', serif;
 }
 .menu-item-desc {
   font-size: 0.75rem; color: rgba(247,243,238,0.5);
@@ -412,6 +436,13 @@ footer .footer-copy {
     <!-- FOOD -->
     <div class="menu-grid active" id="menu-food">
       <div class="menu-category-title">Small Plates</div>
+      <div class="menu-item" data-photo="assets/dumplings.jpg" data-caption="Handmade Dumplings" onclick="openLightbox(this)">
+        <div class="menu-item-info">
+          <div class="menu-item-name">Handmade Dumplings <span class="photo-icon">&#x1f4f7;</span></div>
+          <div class="menu-item-desc">Sesame, spring onion, chilli crisp</div>
+        </div>
+        <div class="menu-item-price">180</div>
+      </div>
       <div class="menu-item">
         <div class="menu-item-info">
           <div class="menu-item-name">Crispy Tuna Yuzu Rice</div>
@@ -458,9 +489,9 @@ footer .footer-copy {
       </div>
 
       <div class="menu-category-title">Mains</div>
-      <div class="menu-item">
+      <div class="menu-item" data-photo="assets/laphet-salad.jpg" data-caption="Laphet Salad" onclick="openLightbox(this)">
         <div class="menu-item-info">
-          <div class="menu-item-name">Laphet Salad</div>
+          <div class="menu-item-name">Laphet Salad <span class="photo-icon">&#x1f4f7;</span></div>
           <div class="menu-item-desc">Burmese tea leaf salad</div>
         </div>
         <div class="menu-item-price">160</div>
@@ -1012,7 +1043,26 @@ footer .footer-copy {
   <div class="footer-copy">&copy; 2026 Ban Sabai 2023 Co., Ltd. All rights reserved.</div>
 </footer>
 
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
 <script>
+function openLightbox(el) {
+  var src = el.getAttribute('data-photo');
+  var caption = el.getAttribute('data-caption') || '';
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-caption').textContent = caption;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+});
+
 function showMenu(id) {
   document.querySelectorAll('.menu-grid').forEach(g => g.classList.remove('active'));
   document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
