@@ -15,8 +15,26 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;500;600&family=Ma+Shan+Zheng&family=Zen+Antique&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
+@font-face {
+  font-family: 'SamuraiBlast';
+  src: url('assets/SamuraiBlast.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Karasha';
+  src: url('assets/Karasha.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'KiraKaiAsian';
+  src: url('assets/KiraKaiAsian.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
 :root {
   --gold: #c69b6d;
   --dark: #1a1510;
@@ -26,6 +44,7 @@
   --brown: #3a2e2a;
   --muted: #7a6b62;
   --copper: #a4724f;
+  --vermillion: #c0392b;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -53,9 +72,9 @@ nav {
   padding: 16px 24px;
 }
 .nav-logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem; font-weight: 700;
-  color: var(--cream); letter-spacing: 2px;
+  font-family: 'KiraKaiAsian', 'Karasha', 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 400;
+  color: var(--cream); letter-spacing: 4px;
 }
 .nav-links { display: flex; gap: 28px; list-style: none; }
 .nav-links a {
@@ -87,11 +106,19 @@ nav {
   padding: 8px 20px; margin-bottom: 24px;
 }
 .hero h1 {
+  font-family: 'KiraKaiAsian', 'Karasha', 'Playfair Display', serif;
   font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 700; line-height: 1.05;
+  font-weight: 400; line-height: 1.05;
+  letter-spacing: 8px;
   margin-bottom: 16px;
+  color: var(--vermillion);
+  background: rgba(0,0,0,0.65);
+  padding: 16px 32px;
+  border-radius: 12px;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
 }
-.hero h1 em { font-style: italic; color: var(--gold); }
 .hero-sub {
   font-size: 1rem; font-weight: 300;
   color: rgba(247,243,238,0.8);
@@ -124,10 +151,34 @@ section { padding: 100px 24px; }
   letter-spacing: 4px; text-transform: uppercase;
   color: var(--gold); margin-bottom: 12px;
 }
+.section-header {
+  display: flex; align-items: center; gap: 16px;
+}
 .section-title {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 600; line-height: 1.2;
   margin-bottom: 16px;
+}
+.hanko-sm {
+  display: inline-flex;
+  flex-direction: column;
+  width: 22px;
+  border: 2px solid var(--vermillion);
+  border-radius: 2px;
+  color: var(--vermillion);
+  font-family: 'Karasha', serif;
+  font-size: 0.55rem;
+  font-weight: 400;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-3deg);
+  opacity: 0.85;
+  flex-shrink: 0;
+  padding: 10px 6px;
+  gap: 1px;
+  background: rgba(192,57,43,0.12);
+  border-radius: 4px;
 }
 .section-desc {
   font-size: 1rem; font-weight: 300;
@@ -348,9 +399,9 @@ footer {
   text-align: center;
 }
 footer .footer-logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.6rem; font-weight: 700;
-  letter-spacing: 3px; color: var(--cream);
+  font-family: 'KiraKaiAsian', 'Karasha', 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 400;
+  letter-spacing: 6px; color: var(--cream);
   margin-bottom: 8px;
 }
 footer .footer-tagline {
@@ -369,6 +420,95 @@ footer .footer-links a {
 footer .footer-copy {
   font-size: 0.65rem; color: rgba(247,243,238,0.3);
 }
+
+/* === ASIAN DESIGN ELEMENTS (all toggleable) === */
+
+/* 1. HANKO STAMP SEAL */
+.hanko {
+  display: inline-flex;
+  flex-direction: column;
+  width: 32px;
+  border: 2.5px solid var(--vermillion);
+  border-radius: 3px;
+  color: var(--vermillion);
+  font-family: 'Karasha', serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-3deg);
+  opacity: 0.85;
+  margin-top: 24px;
+  padding: 6px 0;
+  gap: 2px;
+}
+
+/* 2. WAVE (SEIGAIHA) DIVIDERS */
+.wave-divider {
+  width: 200px; height: 20px;
+  margin: 24px 0;
+  background: none;
+  position: relative;
+}
+.wave-divider svg { width: 100%; height: 100%; }
+
+/* 3. VERTICAL TEXT ACCENT */
+.vertical-accent {
+  position: absolute;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: 'Karasha', serif;
+  font-size: 0.7rem;
+  letter-spacing: 6px;
+  color: rgba(198,155,109,0.15);
+  text-transform: uppercase;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* 4. SEIGAIHA PATTERN BACKGROUND */
+.seigaiha-bg {
+  position: relative;
+}
+.seigaiha-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40'%3E%3Ccircle cx='40' cy='40' r='36' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='40' cy='40' r='28' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='40' cy='40' r='20' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='0' cy='40' r='36' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='0' cy='40' r='28' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='0' cy='40' r='20' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='80' cy='40' r='36' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='80' cy='40' r='28' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3Ccircle cx='80' cy='40' r='20' fill='none' stroke='%23c69b6d' stroke-width='0.8'/%3E%3C/svg%3E");
+  background-size: 80px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+.seigaiha-bg > * { position: relative; z-index: 1; }
+
+/* 5. TORII GATE SEPARATOR */
+.torii-separator {
+  text-align: center;
+  margin: 16px 0;
+  color: rgba(198,155,109,0.25);
+}
+.torii-separator svg {
+  width: 60px; height: 40px;
+}
+
+/* 6. ENSO (ZEN CIRCLE) */
+.enso {
+  display: inline-block;
+  width: 80px; height: 80px;
+  position: relative;
+}
+.enso svg {
+  width: 100%; height: 100%;
+}
+
+/* 7. RED ACCENT COLOR touches */
+.event-card { border-left: 2px solid transparent; }
+.event-card:hover { border-left-color: var(--vermillion); }
+.hero-badge { border-color: rgba(192,57,43,0.3); }
 
 /* MOBILE */
 @media (max-width: 768px) {
@@ -408,21 +548,25 @@ footer .footer-copy {
 <section class="hero">
   <div class="hero-content">
     <div class="hero-badge">Beachfront &middot; Koh Phangan</div>
-    <h1>Kira <em>Kai</em></h1>
-    <p class="hero-sub">Sunset Cocktails &middot; Coastal Dining &middot; Refined Boho</p>
+    <h1>Kira Kai</h1>
+    <p class="hero-sub">Sunset Cocktails &middot; Coastal Dining</p>
     <a href="#menu" class="hero-cta">View Menu</a>
   </div>
+  <!-- 3. VERTICAL TEXT -->
+  <div class="vertical-accent">Kira Kai &middot; Koh Phangan</div>
   <div class="hero-scroll">&darr; Scroll</div>
 </section>
 
 <!-- ABOUT -->
-<section class="about" id="about">
+<!-- 4. SEIGAIHA pattern on about section -->
+<section class="about seigaiha-bg" id="about">
   <div class="container">
     <div class="about-grid">
       <div>
         <div class="section-label">The Golden Hour Lounge</div>
-        <h2 class="section-title">Where the Sea Meets the Stars</h2>
-        <div class="divider"></div>
+        <div class="section-header"><h2 class="section-title">Where the Sea Meets the Stars</h2><div class="hanko-sm"><span>K</span><span>I</span><span>R</span><span>A</span><span>K</span><span>A</span><span>I</span></div></div>
+        <!-- 2. WAVE DIVIDER -->
+        <div class="torii-separator"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="48" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="14" x2="16" y2="38" stroke="currentColor" stroke-width="2"/><line x1="44" y1="14" x2="44" y2="38" stroke="currentColor" stroke-width="2"/></svg></div>
         <p class="section-desc">Inspired by the serene beauty of Koh Phangan's coastline, Kira Kai blends modern European cuisine with handcrafted cocktails and an understated, boho-chic elegance. Every table is a front-row seat to the horizon.</p>
         <div class="about-features">
           <div class="about-feature">
@@ -452,8 +596,8 @@ footer .footer-copy {
 <section class="menu-section" id="menu">
   <div class="container">
     <div class="section-label">The Menu</div>
-    <h2 class="section-title">Crafted with Care</h2>
-    <div class="divider"></div>
+    <div class="section-header"><h2 class="section-title">Crafted with Care</h2><div class="hanko-sm"><span>K</span><span>I</span><span>R</span><span>A</span><span>K</span><span>A</span><span>I</span></div></div>
+    <div class="torii-separator"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="48" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="14" x2="16" y2="38" stroke="currentColor" stroke-width="2"/><line x1="44" y1="14" x2="44" y2="38" stroke="currentColor" stroke-width="2"/></svg></div>
 
     <div class="menu-tabs">
       <button class="menu-tab active" onclick="showMenu('food')">Food</button>
@@ -975,8 +1119,8 @@ footer .footer-copy {
 <section class="events-section" id="events">
   <div class="container">
     <div class="section-label">What's On</div>
-    <h2 class="section-title">Events &amp; Happenings</h2>
-    <div class="divider"></div>
+    <div class="section-header"><h2 class="section-title">Events &amp; Happenings</h2><div class="hanko-sm"><span>K</span><span>I</span><span>R</span><span>A</span><span>K</span><span>A</span><span>I</span></div></div>
+    <div class="torii-separator"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="48" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="14" x2="16" y2="38" stroke="currentColor" stroke-width="2"/><line x1="44" y1="14" x2="44" y2="38" stroke="currentColor" stroke-width="2"/></svg></div>
     <p class="section-desc">From Saturday brunches to sunset sessions — there's always a reason to come by.</p>
 
     <div class="events-grid">
@@ -1024,8 +1168,10 @@ footer .footer-copy {
 <section class="info-section" id="info">
   <div class="container">
     <div class="section-label">Visit Us</div>
-    <h2 class="section-title">Find Your Way</h2>
-    <div class="divider"></div>
+    <!-- 6. ENSO CIRCLE -->
+    <div class="enso"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M40 6 C62 6 74 20 74 40 C74 60 60 74 40 74 C20 74 6 58 8 40" stroke="#c69b6d" stroke-width="2" fill="none" opacity="0.3" stroke-linecap="round"/></svg></div>
+    <div class="section-header"><h2 class="section-title">Find Your Way</h2><div class="hanko-sm"><span>K</span><span>I</span><span>R</span><span>A</span><span>K</span><span>A</span><span>I</span></div></div>
+    <div class="torii-separator"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="48" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="14" x2="16" y2="38" stroke="currentColor" stroke-width="2"/><line x1="44" y1="14" x2="44" y2="38" stroke="currentColor" stroke-width="2"/></svg></div>
 
     <div class="info-grid">
       <div class="info-block">
