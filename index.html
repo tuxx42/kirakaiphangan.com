@@ -93,7 +93,7 @@ nav {
   align-items: center; justify-content: center;
   text-align: center;
   position: relative;
-  background: linear-gradient(180deg, rgba(42,35,32,0.05) 0%, rgba(42,35,32,0.25) 100%),
+  background: linear-gradient(180deg, rgba(42,35,32,0) 0%, rgba(42,35,32,0.1) 100%),
               url('assets/bar.jpg') center/cover no-repeat;
 }
 .hero-content { position: relative; z-index: 2; padding: 0 24px; }
@@ -264,12 +264,19 @@ section { padding: 100px 24px; }
 .menu-grid.active { display: grid; }
 .menu-item {
   display: flex; justify-content: space-between;
-  align-items: baseline; gap: 12px;
+  align-items: center; gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid rgba(198,155,109,0.1);
 }
 .menu-item[data-photo] { cursor: pointer; }
 .menu-item[data-photo]:hover .menu-item-name { color: var(--gold); }
+.menu-item-thumb {
+  width: 56px; height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
 .menu-item-info { flex: 1; }
 .menu-item-name {
   font-family: 'Playfair Display', serif;
@@ -651,8 +658,9 @@ footer .footer-copy {
     <div class="menu-grid active" id="menu-food">
       <div class="menu-category-title">Small Plates</div>
       <div class="menu-item" data-photo="assets/dumplings.jpg" data-caption="Handmade Dumplings" onclick="openLightbox(this)">
+        <img src="assets/dumplings.jpg" alt="Dumplings" class="menu-item-thumb">
         <div class="menu-item-info">
-          <div class="menu-item-name">Handmade Dumplings <span class="photo-icon">&#x1f4f7;</span></div>
+          <div class="menu-item-name">Handmade Dumplings</div>
           <div class="menu-item-desc">Sesame, spring onion, chilli crisp</div>
         </div>
         <div class="menu-item-price">180</div>
@@ -704,8 +712,9 @@ footer .footer-copy {
 
       <div class="menu-category-title">Mains</div>
       <div class="menu-item" data-photo="assets/laphet-salad.jpg" data-caption="Laphet Salad" onclick="openLightbox(this)">
+        <img src="assets/laphet-salad.jpg" alt="Laphet Salad" class="menu-item-thumb">
         <div class="menu-item-info">
-          <div class="menu-item-name">Laphet Salad <span class="photo-icon">&#x1f4f7;</span></div>
+          <div class="menu-item-name">Laphet Salad</div>
           <div class="menu-item-desc">Burmese tea leaf salad</div>
         </div>
         <div class="menu-item-price">160</div>
