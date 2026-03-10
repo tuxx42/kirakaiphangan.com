@@ -37,12 +37,12 @@
 }
 :root {
   --gold: #c69b6d;
-  --dark: #1a1510;
-  --warm: #2c2118;
+  --dark: #2a2320;
+  --warm: #3d322c;
   --cream: #f7f3ee;
   --olive: #8b9870;
-  --brown: #3a2e2a;
-  --muted: #7a6b62;
+  --brown: #4a3e3a;
+  --muted: #9a8b82;
   --copper: #a4724f;
   --vermillion: #c0392b;
 }
@@ -61,7 +61,7 @@ a:hover { color: #ddb88a; }
 /* NAV */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(26,21,16,0.92);
+  background: rgba(42,35,32,0.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(198,155,109,0.15);
   transition: background 0.3s;
@@ -93,7 +93,7 @@ nav {
   align-items: center; justify-content: center;
   text-align: center;
   position: relative;
-  background: linear-gradient(180deg, rgba(26,21,16,0.3) 0%, rgba(26,21,16,0.7) 100%),
+  background: linear-gradient(180deg, rgba(42,35,32,0.2) 0%, rgba(42,35,32,0.6) 100%),
               url('assets/image_1772366331931-CMCzoZfU.png') center/cover no-repeat;
 }
 .hero-content { position: relative; z-index: 2; padding: 0 24px; }
@@ -112,9 +112,9 @@ nav {
   letter-spacing: 8px;
   margin-bottom: 16px;
   color: var(--vermillion);
-  background: rgba(0,0,0,0.65);
+  background: none;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.4);
   padding: 16px 32px;
-  border-radius: 12px;
   margin-left: auto;
   margin-right: auto;
   width: fit-content;
@@ -197,9 +197,33 @@ section { padding: 100px 24px; }
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 60px; align-items: center;
 }
-.about-img {
-  width: 100%; border-radius: 4px;
-  aspect-ratio: 4/3; object-fit: cover;
+.about-mood {
+  position: relative;
+  aspect-ratio: 3/4;
+}
+.about-mood .about-img {
+  position: absolute;
+  width: 70%;
+  border-radius: 4px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  border: 3px solid rgba(247,243,238,0.1);
+}
+.about-mood .about-img:nth-child(1) {
+  top: 0; left: 0;
+  transform: rotate(-3deg);
+  z-index: 1;
+}
+.about-mood .about-img:nth-child(2) {
+  top: 30%; left: 15%;
+  transform: rotate(2deg);
+  z-index: 2;
+}
+.about-mood .about-img:nth-child(3) {
+  top: 60%; left: 5%;
+  transform: rotate(-1.5deg);
+  z-index: 3;
 }
 .about-features {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -393,7 +417,7 @@ section { padding: 100px 24px; }
 
 /* FOOTER */
 footer {
-  background: rgba(26,21,16,0.95);
+  background: rgba(42,35,32,0.95);
   border-top: 1px solid rgba(198,155,109,0.1);
   padding: 48px 24px 32px;
   text-align: center;
@@ -528,7 +552,7 @@ footer .footer-copy {
   .nav-links.open {
     display: flex; flex-direction: column;
     position: absolute; top: 100%; left: 0; right: 0;
-    background: rgba(26,21,16,0.97);
+    background: rgba(42,35,32,0.97);
     padding: 24px; gap: 16px;
   }
   .about-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -598,7 +622,11 @@ footer .footer-copy {
           </div>
         </div>
       </div>
-      <img src="assets/image_1772366302024-cGrz89L4.png" alt="Kira Kai Venue" class="about-img">
+      <div class="about-mood">
+        <img src="assets/image_1772366302024-cGrz89L4.png" alt="Kira Kai Venue" class="about-img">
+        <img src="assets/bar.jpg" alt="Kira Kai Bar" class="about-img">
+        <img src="assets/mood-sunset.jpg" alt="Kira Kai Sunset" class="about-img">
+      </div>
     </div>
   </div>
 </section>
@@ -1172,6 +1200,15 @@ footer .footer-copy {
         <div class="event-time">12:00–14:00 &amp; 16:00–19:00</div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-section">
+  <div class="gallery-row">
+    <img src="assets/bar.jpg" alt="Kira Kai Bar">
+    <img src="assets/dumplings.jpg" alt="Dumplings">
+    <img src="assets/laphet-salad.jpg" alt="Burmese Laphet Salad">
   </div>
 </section>
 
