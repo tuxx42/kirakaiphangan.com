@@ -309,12 +309,18 @@ async function loadEvent() {
 
     const spots = event.spots_left;
     const badge = document.getElementById('spots-badge');
-    badge.textContent = spots + ' spots remaining';
-    if (spots <= 5) badge.classList.add('few');
+    const tenPercent = Math.ceil(event.max_covers * 0.1);
     if (spots <= 0) {
       badge.textContent = 'Fully booked';
       badge.classList.add('few');
+      badge.style.display = '';
       document.getElementById('submit-btn').disabled = true;
+    } else if (spots <= tenPercent) {
+      badge.textContent = spots + ' spot' + (spots === 1 ? '' : 's') + ' remaining';
+      badge.classList.add('few');
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
     }
 
     updateTotal();
