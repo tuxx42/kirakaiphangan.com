@@ -25,7 +25,7 @@ a { color: var(--gold); text-decoration: none; }
 }
 .top-bar a { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; }
 
-.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+.container { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
 
 /* Login */
 #login-screen { max-width: 360px; margin: 80px auto; text-align: center; }
@@ -55,6 +55,22 @@ a { color: var(--gold); text-decoration: none; }
 
 #admin-content { display: none; }
 
+/* Tabs */
+.tabs {
+  display: flex; gap: 0; margin-bottom: 32px;
+  border-bottom: 1px solid rgba(198,155,109,0.15);
+}
+.tab {
+  padding: 12px 24px; font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+.tab:hover { color: var(--cream); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
 /* Section headers */
 .section-head {
   display: flex; justify-content: space-between; align-items: center;
@@ -63,13 +79,14 @@ a { color: var(--gold); text-decoration: none; }
 }
 .section-head h2 { font-size: 1.3rem; }
 
-/* Event form */
+/* Form panels */
 .form-panel {
   background: rgba(44,33,24,0.6); border: 1px solid rgba(198,155,109,0.15);
   border-radius: 4px; padding: 24px; margin-bottom: 32px; display: none;
 }
 .form-panel.show { display: block; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .form-group { margin-bottom: 12px; }
 .form-group label {
   display: block; font-size: 0.65rem; font-weight: 600;
@@ -84,27 +101,35 @@ a { color: var(--gold); text-decoration: none; }
 }
 .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--gold); }
 .form-group textarea { resize: vertical; min-height: 80px; }
+.form-group .checkbox-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 6px;
+}
+.form-group .checkbox-row input[type="checkbox"] {
+  width: auto; accent-color: var(--gold);
+}
 
-/* Event cards */
-.event-card {
+/* Cards */
+.event-card, .type-card {
   background: rgba(44,33,24,0.6); border: 1px solid rgba(198,155,109,0.15);
   border-radius: 4px; padding: 20px; margin-bottom: 16px;
   cursor: pointer; transition: border-color 0.3s;
 }
-.event-card:hover { border-color: rgba(198,155,109,0.4); }
-.event-card-head {
+.event-card:hover, .type-card:hover { border-color: rgba(198,155,109,0.4); }
+.event-card-head, .type-card-head {
   display: flex; justify-content: space-between; align-items: center;
 }
-.event-card h3 { font-size: 1rem; }
-.event-meta {
+.event-card h3, .type-card h3 { font-size: 1rem; }
+.event-meta, .type-meta {
   font-size: 0.7rem; color: var(--muted); margin-top: 4px;
 }
-.event-status {
+.event-status, .type-status {
   font-size: 0.6rem; font-weight: 600; letter-spacing: 2px;
   text-transform: uppercase; padding: 4px 10px; border-radius: 3px;
 }
-.event-status.open { color: var(--olive); border: 1px solid rgba(139,152,112,0.4); }
-.event-status.closed { color: #c0392b; border: 1px solid rgba(192,57,43,0.4); }
+.event-status.open, .type-status.active { color: var(--olive); border: 1px solid rgba(139,152,112,0.4); }
+.event-status.closed, .type-status.paused { color: #c0392b; border: 1px solid rgba(192,57,43,0.4); }
+.type-status.coming_soon { color: var(--gold); border: 1px solid rgba(198,155,109,0.4); }
+.type-status.archived { color: var(--muted); border: 1px solid rgba(154,139,130,0.4); }
 
 /* Bookings table */
 .bookings-panel { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(198,155,109,0.1); }
@@ -120,10 +145,14 @@ td { padding: 10px 6px; border-bottom: 1px solid rgba(198,155,109,0.08); vertica
 
 .empty-state { text-align: center; color: var(--muted); padding: 32px; font-size: 0.85rem; }
 
+.flash { padding: 12px 16px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 16px; }
+.flash-success { background: rgba(139,152,112,0.15); color: var(--olive); border: 1px solid rgba(139,152,112,0.3); }
+
 @media (max-width: 700px) {
-  .form-row { grid-template-columns: 1fr; }
+  .form-row, .form-row-2 { grid-template-columns: 1fr; }
   table { font-size: 0.7rem; }
   .booking-actions { flex-direction: column; }
+  .tabs { overflow-x: auto; }
 }
 </style>
 </head>
@@ -145,77 +174,189 @@ td { padding: 10px 6px; border-bottom: 1px solid rgba(198,155,109,0.08); vertica
 
 <!-- Admin content -->
 <div id="admin-content" class="container">
-
-  <!-- Create event -->
-  <div class="section-head">
-    <h2>Events</h2>
-    <button class="btn btn-sm" onclick="toggleForm()">+ New Event</button>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('types')">Event Types</div>
+    <div class="tab" onclick="switchTab('instances')">Instances & Bookings</div>
   </div>
 
-  <div class="form-panel" id="event-form-panel">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Date *</label>
-        <input type="date" id="ef-date">
-      </div>
-      <div class="form-group">
-        <label>Title</label>
-        <input type="text" id="ef-title" value="Sunday Roast" placeholder="Sunday Roast">
-      </div>
-      <div class="form-group">
-        <label>Price (THB/person)</label>
-        <input type="number" id="ef-price" value="650" min="0">
+  <div id="flash-area"></div>
+
+  <!-- ─── TAB: Event Types ─── -->
+  <div class="tab-panel active" id="tab-types">
+    <div class="section-head">
+      <h2>Event Types</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm btn-olive" onclick="generateInstances()">Generate Instances</button>
+        <button class="btn btn-sm" onclick="toggleTypeForm()">+ New Type</button>
       </div>
     </div>
-    <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-      <div class="form-group">
-        <label>Max Covers</label>
-        <input type="number" id="ef-max" value="30" min="1">
+
+    <div class="form-panel" id="type-form-panel">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Slug *</label>
+          <input type="text" id="tf-slug" placeholder="my-event">
+        </div>
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="tf-title" placeholder="My Event">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="tf-status">
+            <option value="coming_soon">Coming Soon</option>
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Time Display</label>
+          <input type="text" id="tf-time" placeholder="12:00 – 18:00">
+        </div>
+        <div class="form-group">
+          <label>Price (THB/person)</label>
+          <input type="number" id="tf-price" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Max Covers</label>
+          <input type="number" id="tf-max" value="30" min="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Recurrence Rule</label>
+          <select id="tf-recurrence">
+            <option value="">None (one-off)</option>
+            <option value="daily">Daily</option>
+            <option value="weekly:0">Weekly: Sunday</option>
+            <option value="weekly:1">Weekly: Monday</option>
+            <option value="weekly:2">Weekly: Tuesday</option>
+            <option value="weekly:3">Weekly: Wednesday</option>
+            <option value="weekly:4">Weekly: Thursday</option>
+            <option value="weekly:5">Weekly: Friday</option>
+            <option value="weekly:6">Weekly: Saturday</option>
+            <option value="monthly:first:0">Monthly: 1st Sunday</option>
+            <option value="monthly:first:1">Monthly: 1st Monday</option>
+            <option value="monthly:first:5">Monthly: 1st Friday</option>
+            <option value="monthly:first:6">Monthly: 1st Saturday</option>
+            <option value="monthly:last:5">Monthly: Last Friday</option>
+            <option value="monthly:last:6">Monthly: Last Saturday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sort Order</label>
+          <input type="number" id="tf-sort" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Bookable</label>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tf-bookable">
+            <span style="font-size:0.75rem;">Customers can book instances</span>
+          </div>
+        </div>
       </div>
       <div class="form-group">
-        <label>Status</label>
-        <select id="ef-status">
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
-        </select>
+        <label>Description</label>
+        <textarea id="tf-desc" placeholder="Shown on homepage card"></textarea>
       </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn btn-sm" onclick="saveType()">Save Type</button>
+        <button class="btn btn-sm btn-danger" id="delete-type-btn" style="display:none" onclick="deleteType()">Delete</button>
+      </div>
+      <input type="hidden" id="tf-editing-id">
     </div>
-    <div class="form-group">
-      <label>Description</label>
-      <input type="text" id="ef-desc" placeholder="A proper roast by the sea...">
-    </div>
-    <div class="form-group">
-      <label>Menu (dishes)</label>
-      <textarea id="ef-menu" placeholder="Starter: Roasted tomato soup&#10;Main: Slow-roasted beef with Yorkshire pudding&#10;Dessert: Sticky toffee pudding&#10;Vegetarian: Mushroom Wellington"></textarea>
-    </div>
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <button class="btn btn-sm" onclick="saveEvent()">Save Event</button>
-      <button class="btn btn-sm btn-danger" id="delete-event-btn" style="display:none" onclick="deleteEvent()">Delete</button>
-    </div>
-    <input type="hidden" id="ef-editing-id">
+
+    <div id="types-list"></div>
   </div>
 
-  <!-- Events list -->
-  <div id="events-list"></div>
+  <!-- ─── TAB: Instances & Bookings ─── -->
+  <div class="tab-panel" id="tab-instances">
+    <div class="section-head">
+      <h2>Instances & Bookings</h2>
+      <button class="btn btn-sm" onclick="toggleInstanceForm()">+ New Instance</button>
+    </div>
+
+    <div class="form-panel" id="instance-form-panel">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Event Type *</label>
+          <select id="if-type"></select>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="if-date">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="if-status">
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Title Override</label>
+          <input type="text" id="if-title" placeholder="(inherit from type)">
+        </div>
+        <div class="form-group">
+          <label>Price Override (THB)</label>
+          <input type="number" id="if-price" placeholder="(inherit)">
+        </div>
+        <div class="form-group">
+          <label>Max Covers Override</label>
+          <input type="number" id="if-max" placeholder="(inherit)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description Override</label>
+        <input type="text" id="if-desc" placeholder="(inherit from type)">
+      </div>
+      <div class="form-group">
+        <label>Menu (this week's dishes)</label>
+        <textarea id="if-menu" placeholder="Starter: ...&#10;Main: ...&#10;Dessert: ..."></textarea>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn btn-sm" onclick="saveInstance()">Save Instance</button>
+        <button class="btn btn-sm btn-danger" id="delete-instance-btn" style="display:none" onclick="deleteInstance()">Delete</button>
+      </div>
+      <input type="hidden" id="if-editing-id">
+    </div>
+
+    <div id="events-list"></div>
+  </div>
 </div>
 
 <script>
 let token = sessionStorage.getItem('admin_token') || '';
+let eventTypesCache = [];
 
 function api(path, opts = {}) {
   opts.headers = { ...opts.headers, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
   return fetch(path, opts);
 }
 
+function flash(msg, type = 'success') {
+  const el = document.getElementById('flash-area');
+  el.innerHTML = `<div class="flash flash-${type}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
+}
+
+// ── Auth ──
+
 async function login() {
   token = document.getElementById('password-input').value;
-  const res = await api('/api/admin/events');
+  const res = await api('/api/admin/event-types');
   if (res.ok) {
     sessionStorage.setItem('admin_token', token);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-content').style.display = 'block';
     document.getElementById('logout-btn').style.display = 'inline';
-    loadEvents();
+    loadTypes();
   } else {
     document.getElementById('login-error').textContent = 'Wrong password.';
   }
@@ -227,98 +368,237 @@ function logout() {
   location.reload();
 }
 
-// Auto-login if token exists
 if (token) {
-  api('/api/admin/events').then(r => {
+  api('/api/admin/event-types').then(r => {
     if (r.ok) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('admin-content').style.display = 'block';
       document.getElementById('logout-btn').style.display = 'inline';
-      loadEvents();
+      loadTypes();
     }
   });
 }
 
-function toggleForm(eventData) {
-  const panel = document.getElementById('event-form-panel');
-  if (eventData) {
-    document.getElementById('ef-editing-id').value = eventData.id;
-    document.getElementById('ef-date').value = eventData.date;
-    document.getElementById('ef-title').value = eventData.title;
-    document.getElementById('ef-price').value = eventData.price_thb;
-    document.getElementById('ef-max').value = eventData.max_covers;
-    document.getElementById('ef-status').value = eventData.status;
-    document.getElementById('ef-desc').value = eventData.description || '';
-    document.getElementById('ef-menu').value = eventData.menu_description || '';
-    document.getElementById('delete-event-btn').style.display = 'inline-block';
+// ── Tabs ──
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab-panel#tab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'types') loadTypes();
+  else loadEvents();
+}
+
+// ── Event Types ──
+
+function toggleTypeForm(data) {
+  const panel = document.getElementById('type-form-panel');
+  if (data) {
+    document.getElementById('tf-editing-id').value = data.id;
+    document.getElementById('tf-slug').value = data.slug;
+    document.getElementById('tf-title').value = data.title;
+    document.getElementById('tf-desc').value = data.description || '';
+    document.getElementById('tf-time').value = data.time_display || '';
+    document.getElementById('tf-price').value = data.price_thb;
+    document.getElementById('tf-max').value = data.max_covers;
+    document.getElementById('tf-bookable').checked = data.is_bookable;
+    document.getElementById('tf-recurrence').value = data.recurrence_rule || '';
+    document.getElementById('tf-status').value = data.status;
+    document.getElementById('tf-sort').value = data.sort_order;
+    document.getElementById('delete-type-btn').style.display = 'inline-block';
     panel.classList.add('show');
-  } else if (panel.classList.contains('show') && !document.getElementById('ef-editing-id').value) {
+  } else if (panel.classList.contains('show') && !document.getElementById('tf-editing-id').value) {
     panel.classList.remove('show');
   } else {
-    // Reset form for new event
-    document.getElementById('ef-editing-id').value = '';
-    document.getElementById('ef-date').value = '';
-    document.getElementById('ef-title').value = 'Sunday Roast';
-    document.getElementById('ef-price').value = '650';
-    document.getElementById('ef-max').value = '30';
-    document.getElementById('ef-status').value = 'open';
-    document.getElementById('ef-desc').value = '';
-    document.getElementById('ef-menu').value = '';
-    document.getElementById('delete-event-btn').style.display = 'none';
+    document.getElementById('tf-editing-id').value = '';
+    document.getElementById('tf-slug').value = '';
+    document.getElementById('tf-title').value = '';
+    document.getElementById('tf-desc').value = '';
+    document.getElementById('tf-time').value = '';
+    document.getElementById('tf-price').value = '0';
+    document.getElementById('tf-max').value = '30';
+    document.getElementById('tf-bookable').checked = false;
+    document.getElementById('tf-recurrence').value = '';
+    document.getElementById('tf-status').value = 'coming_soon';
+    document.getElementById('tf-sort').value = '0';
+    document.getElementById('delete-type-btn').style.display = 'none';
     panel.classList.add('show');
   }
 }
 
-async function saveEvent() {
-  const id = document.getElementById('ef-editing-id').value;
+async function saveType() {
+  const id = document.getElementById('tf-editing-id').value;
   const body = {
-    date: document.getElementById('ef-date').value,
-    title: document.getElementById('ef-title').value,
-    description: document.getElementById('ef-desc').value,
-    menu_description: document.getElementById('ef-menu').value,
-    price_thb: parseInt(document.getElementById('ef-price').value) || 0,
-    max_covers: parseInt(document.getElementById('ef-max').value) || 30,
-    status: document.getElementById('ef-status').value,
+    slug: document.getElementById('tf-slug').value.trim(),
+    title: document.getElementById('tf-title').value.trim(),
+    description: document.getElementById('tf-desc').value,
+    time_display: document.getElementById('tf-time').value,
+    price_thb: parseInt(document.getElementById('tf-price').value) || 0,
+    max_covers: parseInt(document.getElementById('tf-max').value) || 30,
+    is_bookable: document.getElementById('tf-bookable').checked,
+    recurrence_rule: document.getElementById('tf-recurrence').value || null,
+    status: document.getElementById('tf-status').value,
+    sort_order: parseInt(document.getElementById('tf-sort').value) || 0,
+  };
+  if (!body.slug || !body.title) { alert('Slug and title are required'); return; }
+
+  if (id) {
+    await api('/api/admin/event-types/' + id, { method: 'PUT', body: JSON.stringify(body) });
+  } else {
+    await api('/api/admin/event-types', { method: 'POST', body: JSON.stringify(body) });
+  }
+  document.getElementById('type-form-panel').classList.remove('show');
+  loadTypes();
+}
+
+async function deleteType() {
+  const id = document.getElementById('tf-editing-id').value;
+  if (!id) return;
+  if (!confirm('Delete this event type and ALL its instances and bookings?')) return;
+  await api('/api/admin/event-types/' + id, { method: 'DELETE' });
+  document.getElementById('type-form-panel').classList.remove('show');
+  loadTypes();
+}
+
+async function loadTypes() {
+  const res = await api('/api/admin/event-types');
+  const types = await res.json();
+  eventTypesCache = types;
+  const el = document.getElementById('types-list');
+
+  if (!types.length) {
+    el.innerHTML = '<div class="empty-state">No event types. Create one to get started.</div>';
+    return;
+  }
+
+  el.innerHTML = types.map(t => {
+    const recLabel = t.recurrence_rule || 'one-off';
+    return `
+      <div class="type-card" onclick="toggleTypeForm(${JSON.stringify(t).replace(/"/g, '&quot;')})">
+        <div class="type-card-head">
+          <div>
+            <h3>${t.title}</h3>
+            <div class="type-meta">
+              ${t.slug} &bull; ${recLabel} &bull;
+              ${t.is_bookable ? 'bookable' : 'non-bookable'} &bull;
+              ${t.price_thb > 0 ? t.price_thb + ' THB' : 'Free'} &bull;
+              ${t.max_covers} covers
+            </div>
+          </div>
+          <span class="type-status ${t.status}">${t.status.replace('_', ' ')}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function generateInstances() {
+  const res = await api('/api/admin/generate-instances', {
+    method: 'POST', body: JSON.stringify({ weeks: 8 })
+  });
+  const data = await res.json();
+  flash(data.message);
+  loadEvents();
+}
+
+// ── Event Instances ──
+
+function toggleInstanceForm(data) {
+  const panel = document.getElementById('instance-form-panel');
+  // Populate type dropdown
+  const sel = document.getElementById('if-type');
+  sel.innerHTML = eventTypesCache.map(t => `<option value="${t.id}">${t.title}</option>`).join('');
+
+  if (data) {
+    document.getElementById('if-editing-id').value = data.id;
+    sel.value = data.event_type_id;
+    document.getElementById('if-date').value = data.date;
+    document.getElementById('if-title').value = data.title || '';
+    document.getElementById('if-desc').value = data.description || '';
+    document.getElementById('if-menu').value = data.menu_description || '';
+    document.getElementById('if-price').value = data.price_thb != null ? data.price_thb : '';
+    document.getElementById('if-max').value = data.max_covers != null ? data.max_covers : '';
+    document.getElementById('if-status').value = data.status;
+    document.getElementById('delete-instance-btn').style.display = 'inline-block';
+    panel.classList.add('show');
+  } else if (panel.classList.contains('show') && !document.getElementById('if-editing-id').value) {
+    panel.classList.remove('show');
+  } else {
+    document.getElementById('if-editing-id').value = '';
+    document.getElementById('if-date').value = '';
+    document.getElementById('if-title').value = '';
+    document.getElementById('if-desc').value = '';
+    document.getElementById('if-menu').value = '';
+    document.getElementById('if-price').value = '';
+    document.getElementById('if-max').value = '';
+    document.getElementById('if-status').value = 'open';
+    document.getElementById('delete-instance-btn').style.display = 'none';
+    panel.classList.add('show');
+  }
+}
+
+async function saveInstance() {
+  const id = document.getElementById('if-editing-id').value;
+  const priceVal = document.getElementById('if-price').value;
+  const maxVal = document.getElementById('if-max').value;
+  const body = {
+    event_type_id: parseInt(document.getElementById('if-type').value),
+    date: document.getElementById('if-date').value,
+    title: document.getElementById('if-title').value || null,
+    description: document.getElementById('if-desc').value || null,
+    menu_description: document.getElementById('if-menu').value || null,
+    price_thb: priceVal !== '' ? parseInt(priceVal) : null,
+    max_covers: maxVal !== '' ? parseInt(maxVal) : null,
+    status: document.getElementById('if-status').value,
   };
   if (!body.date) { alert('Date is required'); return; }
 
   if (id) {
-    await api('/api/admin/events/' + id, { method: 'PUT', body: JSON.stringify(body) });
+    await api('/api/admin/event-instances/' + id, { method: 'PUT', body: JSON.stringify(body) });
   } else {
-    await api('/api/admin/events', { method: 'POST', body: JSON.stringify(body) });
+    await api('/api/admin/event-instances', { method: 'POST', body: JSON.stringify(body) });
   }
-  document.getElementById('event-form-panel').classList.remove('show');
+  document.getElementById('instance-form-panel').classList.remove('show');
   loadEvents();
 }
 
-async function deleteEvent() {
-  const id = document.getElementById('ef-editing-id').value;
+async function deleteInstance() {
+  const id = document.getElementById('if-editing-id').value;
   if (!id) return;
-  if (!confirm('Delete this event and all its bookings?')) return;
-  await api('/api/admin/events/' + id, { method: 'DELETE' });
-  document.getElementById('event-form-panel').classList.remove('show');
+  if (!confirm('Delete this instance and all its bookings?')) return;
+  await api('/api/admin/event-instances/' + id, { method: 'DELETE' });
+  document.getElementById('instance-form-panel').classList.remove('show');
   loadEvents();
 }
 
 async function loadEvents() {
+  // Ensure types cache is fresh
+  if (!eventTypesCache.length) {
+    const tr = await api('/api/admin/event-types');
+    eventTypesCache = await tr.json();
+  }
+  const typesMap = Object.fromEntries(eventTypesCache.map(t => [t.id, t]));
+
   const res = await api('/api/admin/events');
   const events = await res.json();
   const el = document.getElementById('events-list');
 
   if (!events.length) {
-    el.innerHTML = '<div class="empty-state">No events yet. Create one to get started.</div>';
+    el.innerHTML = '<div class="empty-state">No instances yet. Generate them or create one manually.</div>';
     return;
   }
 
   el.innerHTML = events.map(ev => {
     const d = new Date(ev.date + 'T12:00:00');
     const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const typeName = typesMap[ev.event_type_id] ? typesMap[ev.event_type_id].title : '';
     return `
       <div class="event-card" id="event-${ev.id}">
-        <div class="event-card-head" onclick="toggleForm(${JSON.stringify(ev).replace(/"/g, '&quot;')})">
+        <div class="event-card-head" onclick="toggleInstanceForm(${JSON.stringify(ev).replace(/"/g, '&quot;')})">
           <div>
             <h3>${ev.title} &mdash; ${dateStr}</h3>
             <div class="event-meta">
+              ${typeName} &bull;
               ${ev.booked_covers}/${ev.max_covers} covers booked &bull;
               ${ev.price_thb > 0 ? ev.price_thb + ' THB/person' : 'Free'}
             </div>

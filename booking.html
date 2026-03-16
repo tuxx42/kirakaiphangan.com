@@ -288,7 +288,8 @@ async function loadEvent() {
 
     const d = new Date(event.date + 'T12:00:00');
     const dateStr = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    document.getElementById('event-date').textContent = dateStr + ' \u2022 12:00 \u2013 18:00';
+    const timeDisplay = event.time_display || '12:00 \u2013 18:00';
+    document.getElementById('event-date').textContent = dateStr + ' \u2022 ' + timeDisplay;
 
     if (event.description) {
       document.getElementById('event-desc').textContent = event.description;
@@ -366,7 +367,6 @@ document.getElementById('booking-form').addEventListener('submit', async (e) => 
     const conf = document.getElementById('confirmation');
     conf.classList.add('show');
     document.getElementById('conf-ref').textContent = data.ref_code;
-    document.getElementById('conf-ref-qr').textContent = data.ref_code;
     document.getElementById('conf-ref-wise').textContent = data.ref_code;
     document.getElementById('conf-ref-rev').textContent = data.ref_code;
     if (data.total_price > 0) {
