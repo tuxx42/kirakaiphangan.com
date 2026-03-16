@@ -387,6 +387,18 @@ section { padding: 100px 24px; }
   font-size: 0.7rem; color: var(--gold);
   margin-top: 12px; font-weight: 500;
 }
+.event-card.coming-soon { position: relative; opacity: 0.55; }
+.event-card.coming-soon::after {
+  content: 'COMING SOON';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  font-size: 0.85rem; font-weight: 700;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--gold); border: 2px solid var(--gold);
+  padding: 8px 20px; border-radius: 4px;
+  background: rgba(42,35,32,0.85);
+  pointer-events: none;
+}
 
 /* GALLERY */
 .gallery-section { background: var(--warm); padding: 80px 0; }
@@ -597,6 +609,56 @@ footer .footer-copy {
   <!-- 3. VERTICAL TEXT -->
   <div class="vertical-accent">Kira Kai &middot; Koh Phangan</div>
   <div class="hero-scroll">&darr; Scroll</div>
+</section>
+
+<!-- EVENTS -->
+<section class="events-section" id="events">
+  <div class="container">
+    <div class="section-label">What's On</div>
+    <div class="section-header"><h2 class="section-title">Events &amp; Happenings</h2><div class="hanko-sm"><span>K</span><span>I</span><span>R</span><span>A</span><span>K</span><span>A</span><span>I</span></div></div>
+    <div class="torii-separator"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="48" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="14" x2="16" y2="38" stroke="currentColor" stroke-width="2"/><line x1="44" y1="14" x2="44" y2="38" stroke="currentColor" stroke-width="2"/></svg></div>
+    <p class="section-desc">From Saturday brunches to sunset sessions — there's always a reason to come by.</p>
+
+    <div class="events-grid">
+      <div class="event-card coming-soon">
+        <div class="event-day">Every Saturday</div>
+        <h3>The Breakfast Club</h3>
+        <p>Our signature Saturday brunch. Three small plates, optional bottomless drinks (90 min), and the best Bloody Marys on the island.</p>
+        <div class="event-time">11:00 – 16:00</div>
+      </div>
+      <div class="event-card">
+        <div class="event-day">Every Sunday</div>
+        <h3>Sunday Roast</h3>
+        <p>A proper roast by the sea. All the trimmings, wine by the glass, and a relaxed afternoon vibe.</p>
+        <div class="event-time">12:00 – 18:00</div>
+        <a href="/booking" style="display:inline-block;margin-top:14px;padding:8px 24px;border:1px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:all 0.3s;" onmouseover="this.style.background='var(--gold)';this.style.color='var(--dark)'" onmouseout="this.style.background='none';this.style.color='var(--gold)'">Book Now</a>
+      </div>
+      <div class="event-card coming-soon">
+        <div class="event-day">Weekly</div>
+        <h3>Aperitivo Nights</h3>
+        <p>Buy a drink, enjoy complimentary canapes and small bites. Negronis, spritzes, and the golden hour.</p>
+        <div class="event-time">17:00 – 19:00</div>
+      </div>
+      <div class="event-card coming-soon">
+        <div class="event-day">Monthly</div>
+        <h3>BBQ Night</h3>
+        <p>Fresh local seafood and meats on the outdoor grill. Cooked to order, eaten by the beach.</p>
+        <div class="event-time">From 18:00</div>
+      </div>
+      <div class="event-card coming-soon">
+        <div class="event-day">Coming Soon</div>
+        <h3>Coffee Rave</h3>
+        <p>Morning DJs, specialty coffee, brunch cocktails. A different kind of wake-up call.</p>
+        <div class="event-time">Morning sessions</div>
+      </div>
+      <div class="event-card coming-soon">
+        <div class="event-day">Daily</div>
+        <h3>Happiness Hours</h3>
+        <p>Twice daily — midday refreshments and sunset specials. The best times to try our signatures.</p>
+        <div class="event-time">12:00–14:00 &amp; 16:00–19:00</div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ABOUT -->
@@ -1159,56 +1221,6 @@ footer .footer-copy {
         <div class="menu-item-price">140</div>
       </div>
       <p class="menu-note">All prices in Thai Baht.</p>
-    </div>
-  </div>
-</section>
-
-<!-- EVENTS -->
-<section class="events-section" id="events">
-  <div class="container">
-    <div class="section-label">What's On</div>
-    <div class="section-header"><h2 class="section-title">Events &amp; Happenings</h2><div class="hanko-sm"><span>K</span><span>I</span><span>R</span><span>A</span><span>K</span><span>A</span><span>I</span></div></div>
-    <div class="torii-separator"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="48" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="14" x2="16" y2="38" stroke="currentColor" stroke-width="2"/><line x1="44" y1="14" x2="44" y2="38" stroke="currentColor" stroke-width="2"/></svg></div>
-    <p class="section-desc">From Saturday brunches to sunset sessions — there's always a reason to come by.</p>
-
-    <div class="events-grid">
-      <div class="event-card">
-        <div class="event-day">Every Saturday</div>
-        <h3>The Breakfast Club</h3>
-        <p>Our signature Saturday brunch. Three small plates, optional bottomless drinks (90 min), and the best Bloody Marys on the island.</p>
-        <div class="event-time">11:00 – 16:00</div>
-      </div>
-      <div class="event-card">
-        <div class="event-day">Every Sunday</div>
-        <h3>Sunday Roast</h3>
-        <p>A proper roast by the sea. All the trimmings, wine by the glass, and a relaxed afternoon vibe.</p>
-        <div class="event-time">12:00 – 18:00</div>
-        <a href="/booking" style="display:inline-block;margin-top:14px;padding:8px 24px;border:1px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:all 0.3s;" onmouseover="this.style.background='var(--gold)';this.style.color='var(--dark)'" onmouseout="this.style.background='none';this.style.color='var(--gold)'">Book Now</a>
-      </div>
-      <div class="event-card">
-        <div class="event-day">Weekly</div>
-        <h3>Aperitivo Nights</h3>
-        <p>Buy a drink, enjoy complimentary canapes and small bites. Negronis, spritzes, and the golden hour.</p>
-        <div class="event-time">17:00 – 19:00</div>
-      </div>
-      <div class="event-card">
-        <div class="event-day">Monthly</div>
-        <h3>BBQ Night</h3>
-        <p>Fresh local seafood and meats on the outdoor grill. Cooked to order, eaten by the beach.</p>
-        <div class="event-time">From 18:00</div>
-      </div>
-      <div class="event-card">
-        <div class="event-day">Coming Soon</div>
-        <h3>Coffee Rave</h3>
-        <p>Morning DJs, specialty coffee, brunch cocktails. A different kind of wake-up call.</p>
-        <div class="event-time">Morning sessions</div>
-      </div>
-      <div class="event-card">
-        <div class="event-day">Daily</div>
-        <h3>Happiness Hours</h3>
-        <p>Twice daily — midday refreshments and sunset specials. The best times to try our signatures.</p>
-        <div class="event-time">12:00–14:00 &amp; 16:00–19:00</div>
-      </div>
     </div>
   </div>
 </section>
