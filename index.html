@@ -651,11 +651,16 @@ footer .footer-copy {
       function _recurrenceLabel(rule, status) {
         if (!rule) return status === 'coming_soon' ? 'Coming Soon' : 'Special Event';
         if (rule === 'daily') return 'Daily';
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         if (rule.startsWith('weekly:')) {
-          const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
           return 'Every ' + days[parseInt(rule.split(':')[1])];
         }
-        if (rule.startsWith('monthly:')) return 'Monthly';
+        if (rule.startsWith('monthly:')) {
+          const parts = rule.split(':');
+          const which = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+          const day = days[parseInt(parts[2])];
+          return which + ' ' + day + ' of the Month';
+        }
         return '';
       }
     })();
