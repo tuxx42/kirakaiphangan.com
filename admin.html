@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Kira Kai Bookings</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c69b6d; --dark: #2a2320; --warm: #3d322c;
+  --cream: #f7f3ee; --olive: #8b9870; --muted: #9a8b82;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Montserrat', sans-serif; color: var(--cream); background: var(--dark); min-height: 100vh; }
+h1, h2, h3 { font-family: 'Playfair Display', serif; }
+a { color: var(--gold); text-decoration: none; }
+
+.top-bar {
+  padding: 16px 24px; background: rgba(42,35,32,0.95);
+  border-bottom: 1px solid rgba(198,155,109,0.15);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.top-bar a { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; }
+
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* Login */
+#login-screen { max-width: 360px; margin: 80px auto; text-align: center; }
+#login-screen h2 { margin-bottom: 20px; }
+#login-screen input {
+  width: 100%; padding: 12px 14px; margin-bottom: 12px;
+  background: rgba(44,33,24,0.8); border: 1px solid rgba(198,155,109,0.2);
+  border-radius: 4px; color: var(--cream); font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+}
+#login-screen input:focus { outline: none; border-color: var(--gold); }
+
+.btn {
+  display: inline-block; padding: 12px 32px;
+  border: 1px solid var(--gold); background: none;
+  color: var(--gold); font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn:hover { background: var(--gold); color: var(--dark); }
+.btn-sm { padding: 6px 16px; font-size: 0.6rem; letter-spacing: 2px; }
+.btn-danger { border-color: #c0392b; color: #c0392b; }
+.btn-danger:hover { background: #c0392b; color: #fff; }
+.btn-olive { border-color: var(--olive); color: var(--olive); }
+.btn-olive:hover { background: var(--olive); color: var(--dark); }
+
+#admin-content { display: none; }
+
+/* Section headers */
+.section-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(198,155,109,0.15);
+}
+.section-head h2 { font-size: 1.3rem; }
+
+/* Event form */
+.form-panel {
+  background: rgba(44,33,24,0.6); border: 1px solid rgba(198,155,109,0.15);
+  border-radius: 4px; padding: 24px; margin-bottom: 32px; display: none;
+}
+.form-panel.show { display: block; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-group { margin-bottom: 12px; }
+.form-group label {
+  display: block; font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%; padding: 10px 12px;
+  background: rgba(30,24,20,0.8); border: 1px solid rgba(198,155,109,0.2);
+  border-radius: 4px; color: var(--cream);
+  font-family: 'Montserrat', sans-serif; font-size: 0.8rem;
+}
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--gold); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* Event cards */
+.event-card {
+  background: rgba(44,33,24,0.6); border: 1px solid rgba(198,155,109,0.15);
+  border-radius: 4px; padding: 20px; margin-bottom: 16px;
+  cursor: pointer; transition: border-color 0.3s;
+}
+.event-card:hover { border-color: rgba(198,155,109,0.4); }
+.event-card-head {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.event-card h3 { font-size: 1rem; }
+.event-meta {
+  font-size: 0.7rem; color: var(--muted); margin-top: 4px;
+}
+.event-status {
+  font-size: 0.6rem; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 3px;
+}
+.event-status.open { color: var(--olive); border: 1px solid rgba(139,152,112,0.4); }
+.event-status.closed { color: #c0392b; border: 1px solid rgba(192,57,43,0.4); }
+
+/* Bookings table */
+.bookings-panel { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(198,155,109,0.1); }
+.bookings-panel.show { display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th { text-align: left; font-size: 0.6rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); padding: 8px 6px; border-bottom: 1px solid rgba(198,155,109,0.15); }
+td { padding: 10px 6px; border-bottom: 1px solid rgba(198,155,109,0.08); vertical-align: top; }
+.status-pending { color: var(--gold); }
+.status-confirmed { color: var(--olive); }
+.status-cancelled { color: #c0392b; text-decoration: line-through; opacity: 0.6; }
+.booking-actions { display: flex; gap: 6px; }
+.booking-notes { font-size: 0.7rem; color: var(--muted); font-style: italic; }
+
+.empty-state { text-align: center; color: var(--muted); padding: 32px; font-size: 0.85rem; }
+
+@media (max-width: 700px) {
+  .form-row { grid-template-columns: 1fr; }
+  table { font-size: 0.7rem; }
+  .booking-actions { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/">&larr; Kira Kai</a>
+  <a href="#" id="logout-btn" style="display:none" onclick="logout()">Logout</a>
+</div>
+
+<!-- Login -->
+<div id="login-screen">
+  <h2>Admin</h2>
+  <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+  <br>
+  <button class="btn" onclick="login()">Enter</button>
+  <p id="login-error" style="color:#c0392b; font-size:0.8rem; margin-top:12px;"></p>
+</div>
+
+<!-- Admin content -->
+<div id="admin-content" class="container">
+
+  <!-- Create event -->
+  <div class="section-head">
+    <h2>Events</h2>
+    <button class="btn btn-sm" onclick="toggleForm()">+ New Event</button>
+  </div>
+
+  <div class="form-panel" id="event-form-panel">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="ef-date">
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="ef-title" value="Sunday Roast" placeholder="Sunday Roast">
+      </div>
+      <div class="form-group">
+        <label>Price (THB/person)</label>
+        <input type="number" id="ef-price" value="650" min="0">
+      </div>
+    </div>
+    <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+      <div class="form-group">
+        <label>Max Covers</label>
+        <input type="number" id="ef-max" value="30" min="1">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="ef-status">
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" id="ef-desc" placeholder="A proper roast by the sea...">
+    </div>
+    <div class="form-group">
+      <label>Menu (dishes)</label>
+      <textarea id="ef-menu" placeholder="Starter: Roasted tomato soup&#10;Main: Slow-roasted beef with Yorkshire pudding&#10;Dessert: Sticky toffee pudding&#10;Vegetarian: Mushroom Wellington"></textarea>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button class="btn btn-sm" onclick="saveEvent()">Save Event</button>
+      <button class="btn btn-sm btn-danger" id="delete-event-btn" style="display:none" onclick="deleteEvent()">Delete</button>
+    </div>
+    <input type="hidden" id="ef-editing-id">
+  </div>
+
+  <!-- Events list -->
+  <div id="events-list"></div>
+</div>
+
+<script>
+let token = sessionStorage.getItem('admin_token') || '';
+
+function api(path, opts = {}) {
+  opts.headers = { ...opts.headers, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  return fetch(path, opts);
+}
+
+async function login() {
+  token = document.getElementById('password-input').value;
+  const res = await api('/api/admin/events');
+  if (res.ok) {
+    sessionStorage.setItem('admin_token', token);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('logout-btn').style.display = 'inline';
+    loadEvents();
+  } else {
+    document.getElementById('login-error').textContent = 'Wrong password.';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('admin_token');
+  token = '';
+  location.reload();
+}
+
+// Auto-login if token exists
+if (token) {
+  api('/api/admin/events').then(r => {
+    if (r.ok) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-content').style.display = 'block';
+      document.getElementById('logout-btn').style.display = 'inline';
+      loadEvents();
+    }
+  });
+}
+
+function toggleForm(eventData) {
+  const panel = document.getElementById('event-form-panel');
+  if (eventData) {
+    document.getElementById('ef-editing-id').value = eventData.id;
+    document.getElementById('ef-date').value = eventData.date;
+    document.getElementById('ef-title').value = eventData.title;
+    document.getElementById('ef-price').value = eventData.price_thb;
+    document.getElementById('ef-max').value = eventData.max_covers;
+    document.getElementById('ef-status').value = eventData.status;
+    document.getElementById('ef-desc').value = eventData.description || '';
+    document.getElementById('ef-menu').value = eventData.menu_description || '';
+    document.getElementById('delete-event-btn').style.display = 'inline-block';
+    panel.classList.add('show');
+  } else if (panel.classList.contains('show') && !document.getElementById('ef-editing-id').value) {
+    panel.classList.remove('show');
+  } else {
+    // Reset form for new event
+    document.getElementById('ef-editing-id').value = '';
+    document.getElementById('ef-date').value = '';
+    document.getElementById('ef-title').value = 'Sunday Roast';
+    document.getElementById('ef-price').value = '650';
+    document.getElementById('ef-max').value = '30';
+    document.getElementById('ef-status').value = 'open';
+    document.getElementById('ef-desc').value = '';
+    document.getElementById('ef-menu').value = '';
+    document.getElementById('delete-event-btn').style.display = 'none';
+    panel.classList.add('show');
+  }
+}
+
+async function saveEvent() {
+  const id = document.getElementById('ef-editing-id').value;
+  const body = {
+    date: document.getElementById('ef-date').value,
+    title: document.getElementById('ef-title').value,
+    description: document.getElementById('ef-desc').value,
+    menu_description: document.getElementById('ef-menu').value,
+    price_thb: parseInt(document.getElementById('ef-price').value) || 0,
+    max_covers: parseInt(document.getElementById('ef-max').value) || 30,
+    status: document.getElementById('ef-status').value,
+  };
+  if (!body.date) { alert('Date is required'); return; }
+
+  if (id) {
+    await api('/api/admin/events/' + id, { method: 'PUT', body: JSON.stringify(body) });
+  } else {
+    await api('/api/admin/events', { method: 'POST', body: JSON.stringify(body) });
+  }
+  document.getElementById('event-form-panel').classList.remove('show');
+  loadEvents();
+}
+
+async function deleteEvent() {
+  const id = document.getElementById('ef-editing-id').value;
+  if (!id) return;
+  if (!confirm('Delete this event and all its bookings?')) return;
+  await api('/api/admin/events/' + id, { method: 'DELETE' });
+  document.getElementById('event-form-panel').classList.remove('show');
+  loadEvents();
+}
+
+async function loadEvents() {
+  const res = await api('/api/admin/events');
+  const events = await res.json();
+  const el = document.getElementById('events-list');
+
+  if (!events.length) {
+    el.innerHTML = '<div class="empty-state">No events yet. Create one to get started.</div>';
+    return;
+  }
+
+  el.innerHTML = events.map(ev => {
+    const d = new Date(ev.date + 'T12:00:00');
+    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    return `
+      <div class="event-card" id="event-${ev.id}">
+        <div class="event-card-head" onclick="toggleForm(${JSON.stringify(ev).replace(/"/g, '&quot;')})">
+          <div>
+            <h3>${ev.title} &mdash; ${dateStr}</h3>
+            <div class="event-meta">
+              ${ev.booked_covers}/${ev.max_covers} covers booked &bull;
+              ${ev.price_thb > 0 ? ev.price_thb + ' THB/person' : 'Free'}
+            </div>
+          </div>
+          <span class="event-status ${ev.status}">${ev.status}</span>
+        </div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-sm" onclick="loadBookings(${ev.id})">View Bookings</button>
+        </div>
+        <div class="bookings-panel" id="bookings-${ev.id}"></div>
+      </div>`;
+  }).join('');
+}
+
+async function loadBookings(eventId) {
+  const panel = document.getElementById('bookings-' + eventId);
+  if (panel.classList.contains('show')) {
+    panel.classList.remove('show');
+    return;
+  }
+
+  const res = await api('/api/admin/bookings/' + eventId);
+  const bookings = await res.json();
+  panel.classList.add('show');
+
+  if (!bookings.length) {
+    panel.innerHTML = '<div class="empty-state">No bookings yet.</div>';
+    return;
+  }
+
+  const totalGuests = bookings.filter(b => b.status !== 'cancelled').reduce((sum, b) => sum + b.guests, 0);
+  const confirmed = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + b.guests, 0);
+  const pending = bookings.filter(b => b.status === 'pending').reduce((sum, b) => sum + b.guests, 0);
+
+  panel.innerHTML = `
+    <div style="font-size:0.75rem; color:var(--muted); margin-bottom:12px;">
+      ${totalGuests} total guests &bull; ${confirmed} confirmed &bull; ${pending} pending
+    </div>
+    <table>
+      <tr><th>Ref</th><th>Name</th><th>Guests</th><th>Contact</th><th>Notes</th><th>Status</th><th>Actions</th></tr>
+      ${bookings.map(b => `
+        <tr class="status-${b.status}">
+          <td><strong>${b.ref_code}</strong></td>
+          <td>${b.name}</td>
+          <td>${b.guests}</td>
+          <td style="font-size:0.7rem;">${b.email || ''}<br>${b.phone || ''}</td>
+          <td class="booking-notes">${b.dietary_notes || '-'}</td>
+          <td><span class="status-${b.status}">${b.status}</span></td>
+          <td class="booking-actions">
+            ${b.status === 'pending' ? `
+              <button class="btn btn-sm btn-olive" onclick="setStatus(${b.id}, 'confirmed', ${b.event_id})">Confirm</button>
+              <button class="btn btn-sm btn-danger" onclick="setStatus(${b.id}, 'cancelled', ${b.event_id})">Cancel</button>
+            ` : b.status === 'confirmed' ? `
+              <button class="btn btn-sm btn-danger" onclick="setStatus(${b.id}, 'cancelled', ${b.event_id})">Cancel</button>
+            ` : `
+              <button class="btn btn-sm" onclick="setStatus(${b.id}, 'pending', ${b.event_id})">Reopen</button>
+            `}
+          </td>
+        </tr>
+      `).join('')}
+    </table>`;
+}
+
+async function setStatus(bookingId, status, eventId) {
+  await api('/api/admin/bookings/' + bookingId + '/status', {
+    method: 'PUT', body: JSON.stringify({ status })
+  });
+  loadBookings(eventId);
+  loadEvents();
+}
+</script>
+</body>
+</html>

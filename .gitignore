@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+bookings.db
+.qiv-trash/
+*.pyc
