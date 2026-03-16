@@ -21,6 +21,7 @@ SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")  # e.g. https://kirakai.com
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +97,71 @@ def send_email(to_email, subject, html_body):
     except Exception as e:
         log.error("Failed to send email to %s: %s", to_email, e)
         return False
+
+
+def send_booking_received_email(booking, event):
+    """Email sent immediately when a customer submits a booking."""
+    from datetime import datetime
+    d = datetime.strptime(event["date"], "%Y-%m-%d")
+    date_str = d.strftime("%A %d %B %Y")
+    total = event["price_thb"] * booking["guests"]
+
+    payment_section = ""
+    if total > 0:
+        payment_section = f"""
+        <div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;">
+            <h3 style="font-family:Georgia,serif;color:#c69b6d;font-size:15px;margin:0 0 12px;">Payment Details</h3>
+            <p style="color:#f7f3ee;font-size:16px;font-weight:600;margin:0 0 16px;">{total:,} THB</p>
+            <p style="color:rgba(247,243,238,0.8);font-size:13px;line-height:1.8;margin:0;">
+                Please include your reference code <strong>{booking["ref_code"]}</strong> with your payment.
+            </p>
+
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(198,155,109,0.15);">
+                <p style="color:#c69b6d;font-size:13px;font-weight:600;margin:0 0 4px;">Revolut</p>
+                <p style="color:rgba(247,243,238,0.7);font-size:13px;margin:0;">Send to: <strong>joelthomas83</strong> &middot; Ref: <strong>{booking["ref_code"]}</strong></p>
+            </div>
+
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(198,155,109,0.15);">
+                <p style="color:#c69b6d;font-size:13px;font-weight:600;margin:0 0 4px;">Wise</p>
+                <p style="color:rgba(247,243,238,0.7);font-size:13px;margin:0;">Send to: <strong>joelt134</strong> &middot; Ref: <strong>{booking["ref_code"]}</strong></p>
+            </div>
+
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(198,155,109,0.15);">
+                <p style="color:#c69b6d;font-size:13px;font-weight:600;margin:0 0 4px;">Thai Bank Transfer (PromptPay)</p>
+                <p style="color:rgba(247,243,238,0.7);font-size:13px;margin:0;">Coming soon</p>
+            </div>
+        </div>
+        """
+
+    html = f"""
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#2a2320;color:#f7f3ee;padding:40px;">
+        <h1 style="font-family:Georgia,serif;color:#c69b6d;font-size:24px;margin-bottom:4px;">Booking Received</h1>
+        <p style="color:#9a8b82;font-size:14px;margin-bottom:24px;">Kira Kai &middot; Koh Phangan</p>
+
+        <div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;">
+            <h2 style="font-family:Georgia,serif;color:#f7f3ee;font-size:18px;margin:0 0 16px;">{event["title"]}</h2>
+            <p style="color:#c69b6d;font-size:14px;margin:0 0 4px;">{date_str} &middot; 12:00 – 18:00</p>
+            <p style="color:#f7f3ee;font-size:14px;margin:0;">
+                <strong>{booking["name"]}</strong> &middot; {booking["guests"]} guest{"s" if booking["guests"] > 1 else ""}
+            </p>
+            <p style="color:#9a8b82;font-size:13px;margin:8px 0 0;">Ref: {booking["ref_code"]}</p>
+        </div>
+
+        {payment_section}
+
+        {f'<div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;"><h3 style="font-family:Georgia,serif;color:#c69b6d;font-size:15px;margin:0 0 12px;">On the Menu</h3><p style="color:rgba(247,243,238,0.8);font-size:13px;line-height:1.8;white-space:pre-line;margin:0;">{event["menu_description"]}</p></div>' if event.get("menu_description") else ""}
+
+        <p style="color:rgba(247,243,238,0.7);font-size:13px;line-height:1.6;">
+            {"Your booking is pending until payment is received. We'll confirm once we've matched your payment." if total > 0 else "You're all set! No payment required for this event."}
+            If you have any questions, just reply to this email or message us directly.
+        </p>
+
+        <p style="color:#9a8b82;font-size:12px;margin-top:32px;border-top:1px solid rgba(198,155,109,0.1);padding-top:16px;">
+            Kira Kai &middot; 17 Moo 1, Ban Tai, Koh Phangan
+        </p>
+    </div>
+    """
+    send_email(booking["email"], f"Booking Received — {event['title']} {date_str}", html)
 
 
 def send_booking_confirmed_email(booking, event):
@@ -276,6 +342,12 @@ def create_booking():
     db.commit()
 
     total_price = event["price_thb"] * guests
+
+    # Send booking received email to customer
+    if data.get("email"):
+        booking_data = {"name": data["name"], "email": data["email"],
+                        "guests": guests, "ref_code": ref_code}
+        send_booking_received_email(booking_data, event)
 
     return jsonify({
         "ref_code": ref_code,
