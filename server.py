@@ -149,7 +149,7 @@ def send_booking_received_email(booking, event):
 
         {payment_section}
 
-        {f'<div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;"><h3 style="font-family:Georgia,serif;color:#c69b6d;font-size:15px;margin:0 0 12px;">On the Menu</h3><p style="color:rgba(247,243,238,0.8);font-size:13px;line-height:1.8;white-space:pre-line;margin:0;">{event["menu_description"]}</p></div>' if event.get("menu_description") else ""}
+        {f'<div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;"><h3 style="font-family:Georgia,serif;color:#c69b6d;font-size:15px;margin:0 0 12px;">On the Menu</h3><p style="color:rgba(247,243,238,0.8);font-size:13px;line-height:1.8;white-space:pre-line;margin:0;">{event["menu_description"]}</p></div>' if event["menu_description"] else ""}
 
         <p style="color:rgba(247,243,238,0.7);font-size:13px;line-height:1.6;">
             {"Your booking is pending until payment is received. We'll confirm once we've matched your payment." if total > 0 else "You're all set! No payment required for this event."}
