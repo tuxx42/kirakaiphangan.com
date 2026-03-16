@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kira Kai booking system — Flask + SQLite."""
+"""Kira Kai booking system — Flask + PostgreSQL (prod) / SQLite (local dev)."""
 
 import os
 import sqlite3
@@ -14,7 +14,12 @@ from flask import Flask, request, jsonify, send_from_directory, g
 app = Flask(__name__, static_folder=".", static_url_path="")
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "kiraKAI2026")
-DB_PATH = os.environ.get("DB_PATH", "bookings.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+USE_POSTGRES = DATABASE_URL.startswith("postgres")
+
+if USE_POSTGRES:
+    import psycopg2
+    import psycopg2.extras
 
 # Email config — set these env vars or emails won't send (fails silently)
 SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "")
@@ -28,13 +33,56 @@ log = logging.getLogger(__name__)
 
 # ── Database ────────────────────────────────────────────────────────────────
 
+class SqliteDictRow(sqlite3.Row):
+    """sqlite3.Row wrapper that supports .get() like a dict."""
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except (IndexError, KeyError):
+            return default
+
+
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA journal_mode=WAL")
-        g.db.execute("PRAGMA foreign_keys=ON")
+        if USE_POSTGRES:
+            g.db = psycopg2.connect(DATABASE_URL)
+            g.db.autocommit = False
+        else:
+            g.db = sqlite3.connect(os.environ.get("DB_PATH", "bookings.db"))
+            g.db.row_factory = SqliteDictRow
+            g.db.execute("PRAGMA journal_mode=WAL")
+            g.db.execute("PRAGMA foreign_keys=ON")
     return g.db
+
+
+def _adapt_query(query):
+    """Convert %s placeholders to ? for SQLite."""
+    if not USE_POSTGRES:
+        query = query.replace("%s", "?")
+        query = query.replace("CURRENT_DATE::text", "date('now')")
+    return query
+
+
+def db_execute(query, params=None):
+    """Execute a query returning dict-like rows."""
+    db = get_db()
+    query = _adapt_query(query)
+    if USE_POSTGRES:
+        cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(query, params)
+        return cur
+    else:
+        return db.execute(query, params or ())
+
+
+def db_fetchone(query, params=None):
+    cur = db_execute(query, params)
+    return cur.fetchone()
+
+
+def db_fetchall(query, params=None):
+    cur = db_execute(query, params)
+    return cur.fetchall()
 
 
 @app.teardown_appcontext
@@ -45,33 +93,64 @@ def close_db(exc):
 
 
 def init_db():
-    db = sqlite3.connect(DB_PATH)
-    db.executescript("""
-        CREATE TABLE IF NOT EXISTS events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            title TEXT NOT NULL DEFAULT 'Sunday Roast',
-            description TEXT,
-            menu_description TEXT,
-            price_thb INTEGER NOT NULL DEFAULT 0,
-            max_covers INTEGER NOT NULL DEFAULT 30,
-            status TEXT NOT NULL DEFAULT 'open',
-            created_at TEXT DEFAULT (datetime('now'))
-        );
-        CREATE TABLE IF NOT EXISTS bookings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_id INTEGER NOT NULL REFERENCES events(id),
-            ref_code TEXT NOT NULL,
-            name TEXT NOT NULL,
-            email TEXT,
-            phone TEXT,
-            guests INTEGER NOT NULL DEFAULT 1,
-            dietary_notes TEXT,
-            status TEXT NOT NULL DEFAULT 'pending',
-            created_at TEXT DEFAULT (datetime('now'))
-        );
-    """)
-    db.close()
+    if USE_POSTGRES:
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.autocommit = True
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                id SERIAL PRIMARY KEY,
+                date TEXT NOT NULL,
+                title TEXT NOT NULL DEFAULT 'Sunday Roast',
+                description TEXT,
+                menu_description TEXT,
+                price_thb INTEGER NOT NULL DEFAULT 0,
+                max_covers INTEGER NOT NULL DEFAULT 30,
+                status TEXT NOT NULL DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS bookings (
+                id SERIAL PRIMARY KEY,
+                event_id INTEGER NOT NULL REFERENCES events(id),
+                ref_code TEXT NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT,
+                phone TEXT,
+                guests INTEGER NOT NULL DEFAULT 1,
+                dietary_notes TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        """)
+        conn.close()
+    else:
+        db = sqlite3.connect(os.environ.get("DB_PATH", "bookings.db"))
+        db.executescript("""
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                title TEXT NOT NULL DEFAULT 'Sunday Roast',
+                description TEXT,
+                menu_description TEXT,
+                price_thb INTEGER NOT NULL DEFAULT 0,
+                max_covers INTEGER NOT NULL DEFAULT 30,
+                status TEXT NOT NULL DEFAULT 'open',
+                created_at TEXT DEFAULT (datetime('now'))
+            );
+            CREATE TABLE IF NOT EXISTS bookings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id INTEGER NOT NULL REFERENCES events(id),
+                ref_code TEXT NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT,
+                phone TEXT,
+                guests INTEGER NOT NULL DEFAULT 1,
+                dietary_notes TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TEXT DEFAULT (datetime('now'))
+            );
+        """)
+        db.close()
 
 
 # ── Email ───────────────────────────────────────────────────────────────────
@@ -184,7 +263,7 @@ def send_booking_confirmed_email(booking, event):
             <p style="color:#9a8b82;font-size:13px;margin:8px 0 0;">Ref: {booking["ref_code"]}</p>
         </div>
 
-        {f'<div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;"><h3 style="font-family:Georgia,serif;color:#c69b6d;font-size:15px;margin:0 0 12px;">On the Menu</h3><p style="color:rgba(247,243,238,0.8);font-size:13px;line-height:1.8;white-space:pre-line;margin:0;">{event["menu_description"]}</p></div>' if event.get("menu_description") else ""}
+        {f'<div style="background:#3d322c;border:1px solid rgba(198,155,109,0.2);border-radius:4px;padding:24px;margin-bottom:24px;"><h3 style="font-family:Georgia,serif;color:#c69b6d;font-size:15px;margin:0 0 12px;">On the Menu</h3><p style="color:rgba(247,243,238,0.8);font-size:13px;line-height:1.8;white-space:pre-line;margin:0;">{event["menu_description"]}</p></div>' if event["menu_description"] else ""}
 
         <p style="color:rgba(247,243,238,0.7);font-size:13px;line-height:1.6;">
             We look forward to seeing you! If you need to make changes, reply to this email or message us directly.
@@ -264,16 +343,15 @@ def admin_page():
 @app.route("/api/events", methods=["GET"])
 def list_events():
     """Return open events (public)."""
-    db = get_db()
-    rows = db.execute(
-        "SELECT * FROM events WHERE status = 'open' AND date >= date('now') ORDER BY date"
-    ).fetchall()
+    rows = db_fetchall(
+        "SELECT * FROM events WHERE status = 'open' AND date >= CURRENT_DATE::text ORDER BY date"
+    )
     events = []
     for r in rows:
-        booked = db.execute(
-            "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = ? AND status != 'cancelled'",
+        booked = db_fetchone(
+            "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = %s AND status != 'cancelled'",
             (r["id"],)
-        ).fetchone()["total"]
+        )["total"]
         events.append({
             "id": r["id"], "date": r["date"], "title": r["title"],
             "description": r["description"], "menu_description": r["menu_description"],
@@ -286,14 +364,13 @@ def list_events():
 
 @app.route("/api/events/<int:event_id>", methods=["GET"])
 def get_event(event_id):
-    db = get_db()
-    r = db.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
+    r = db_fetchone("SELECT * FROM events WHERE id = %s", (event_id,))
     if not r:
         return jsonify({"error": "event not found"}), 404
-    booked = db.execute(
-        "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = ? AND status != 'cancelled'",
+    booked = db_fetchone(
+        "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = %s AND status != 'cancelled'",
         (r["id"],)
-    ).fetchone()["total"]
+    )["total"]
     return jsonify({
         "id": r["id"], "date": r["date"], "title": r["title"],
         "description": r["description"], "menu_description": r["menu_description"],
@@ -320,22 +397,22 @@ def create_booking():
         return jsonify({"error": "guests must be 1-20"}), 400
 
     db = get_db()
-    event = db.execute("SELECT * FROM events WHERE id = ? AND status = 'open'", (data["event_id"],)).fetchone()
+    event = db_fetchone("SELECT * FROM events WHERE id = %s AND status = 'open'", (data["event_id"],))
     if not event:
         return jsonify({"error": "event not available"}), 404
 
-    booked = db.execute(
-        "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = ? AND status != 'cancelled'",
+    booked = db_fetchone(
+        "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = %s AND status != 'cancelled'",
         (event["id"],)
-    ).fetchone()["total"]
+    )["total"]
 
     if booked + guests > event["max_covers"]:
         return jsonify({"error": "not enough spots available"}), 400
 
     ref_code = "KK-" + secrets.token_hex(3).upper()
 
-    db.execute(
-        "INSERT INTO bookings (event_id, ref_code, name, email, phone, guests, dietary_notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    db_execute(
+        "INSERT INTO bookings (event_id, ref_code, name, email, phone, guests, dietary_notes) VALUES (%s, %s, %s, %s, %s, %s, %s)",
         (data["event_id"], ref_code, data["name"], data.get("email", ""),
          data.get("phone", ""), guests, data.get("dietary_notes", ""))
     )
@@ -361,20 +438,19 @@ def create_booking():
 @app.route("/api/admin/events", methods=["GET"])
 @require_admin
 def admin_list_events():
-    db = get_db()
-    rows = db.execute("SELECT * FROM events ORDER BY date DESC").fetchall()
+    rows = db_fetchall("SELECT * FROM events ORDER BY date DESC")
     events = []
     for r in rows:
-        booked = db.execute(
-            "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = ? AND status != 'cancelled'",
+        booked = db_fetchone(
+            "SELECT COALESCE(SUM(guests), 0) as total FROM bookings WHERE event_id = %s AND status != 'cancelled'",
             (r["id"],)
-        ).fetchone()["total"]
+        )["total"]
         events.append({
             "id": r["id"], "date": r["date"], "title": r["title"],
             "description": r["description"], "menu_description": r["menu_description"],
             "price_thb": r["price_thb"], "max_covers": r["max_covers"],
             "booked_covers": booked, "status": r["status"],
-            "created_at": r["created_at"],
+            "created_at": str(r["created_at"]) if r["created_at"] else None,
         })
     return jsonify(events)
 
@@ -386,8 +462,8 @@ def admin_create_event():
     if not data or not data.get("date"):
         return jsonify({"error": "date is required"}), 400
     db = get_db()
-    db.execute(
-        "INSERT INTO events (date, title, description, menu_description, price_thb, max_covers) VALUES (?, ?, ?, ?, ?, ?)",
+    db_execute(
+        "INSERT INTO events (date, title, description, menu_description, price_thb, max_covers) VALUES (%s, %s, %s, %s, %s, %s)",
         (data["date"], data.get("title", "Sunday Roast"), data.get("description", ""),
          data.get("menu_description", ""), int(data.get("price_thb", 0)), int(data.get("max_covers", 30)))
     )
@@ -400,11 +476,11 @@ def admin_create_event():
 def admin_update_event(event_id):
     data = request.json
     db = get_db()
-    event = db.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
+    event = db_fetchone("SELECT * FROM events WHERE id = %s", (event_id,))
     if not event:
         return jsonify({"error": "not found"}), 404
-    db.execute(
-        "UPDATE events SET date=?, title=?, description=?, menu_description=?, price_thb=?, max_covers=?, status=? WHERE id=?",
+    db_execute(
+        "UPDATE events SET date=%s, title=%s, description=%s, menu_description=%s, price_thb=%s, max_covers=%s, status=%s WHERE id=%s",
         (data.get("date", event["date"]), data.get("title", event["title"]),
          data.get("description", event["description"]),
          data.get("menu_description", event["menu_description"]),
@@ -420,8 +496,8 @@ def admin_update_event(event_id):
 @require_admin
 def admin_delete_event(event_id):
     db = get_db()
-    db.execute("DELETE FROM bookings WHERE event_id = ?", (event_id,))
-    db.execute("DELETE FROM events WHERE id = ?", (event_id,))
+    db_execute("DELETE FROM bookings WHERE event_id = %s", (event_id,))
+    db_execute("DELETE FROM events WHERE id = %s", (event_id,))
     db.commit()
     return jsonify({"message": "deleted"})
 
@@ -429,11 +505,16 @@ def admin_delete_event(event_id):
 @app.route("/api/admin/bookings/<int:event_id>", methods=["GET"])
 @require_admin
 def admin_list_bookings(event_id):
-    db = get_db()
-    rows = db.execute(
-        "SELECT * FROM bookings WHERE event_id = ? ORDER BY created_at", (event_id,)
-    ).fetchall()
-    return jsonify([dict(r) for r in rows])
+    rows = db_fetchall(
+        "SELECT * FROM bookings WHERE event_id = %s ORDER BY created_at", (event_id,)
+    )
+    result = []
+    for r in rows:
+        row = dict(r)
+        if row.get("created_at"):
+            row["created_at"] = str(row["created_at"])
+        result.append(row)
+    return jsonify(result)
 
 
 @app.route("/api/admin/bookings/<int:booking_id>/status", methods=["PUT"])
@@ -444,17 +525,17 @@ def admin_update_booking_status(booking_id):
     if new_status not in ("pending", "confirmed", "cancelled"):
         return jsonify({"error": "invalid status"}), 400
     db = get_db()
-    booking = db.execute("SELECT * FROM bookings WHERE id = ?", (booking_id,)).fetchone()
+    booking = db_fetchone("SELECT * FROM bookings WHERE id = %s", (booking_id,))
     if not booking:
         return jsonify({"error": "booking not found"}), 404
     old_status = booking["status"]
-    db.execute("UPDATE bookings SET status = ? WHERE id = ?", (new_status, booking_id))
+    db_execute("UPDATE bookings SET status = %s WHERE id = %s", (new_status, booking_id))
     db.commit()
 
     # Send email on status change
     if new_status != old_status and booking["email"]:
-        booking = db.execute("SELECT * FROM bookings WHERE id = ?", (booking_id,)).fetchone()
-        event = db.execute("SELECT * FROM events WHERE id = ?", (booking["event_id"],)).fetchone()
+        booking = db_fetchone("SELECT * FROM bookings WHERE id = %s", (booking_id,))
+        event = db_fetchone("SELECT * FROM events WHERE id = %s", (booking["event_id"],))
         if event:
             if new_status == "confirmed":
                 send_booking_confirmed_email(booking, event)
